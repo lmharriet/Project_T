@@ -12,7 +12,7 @@ public class Project_T : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayAbilities","GameplayTags","GameplayTasks"});
 
-		PrivateIncludePaths.AddRange(new string[] { "Project_T"  });
+		PrivateIncludePaths.AddRange(new string[] { "Project_T" });
 
     }
 }

@@ -18,7 +18,9 @@ enum class ECharacterType : uint8
 	Solder,
 	Guardian,
 	Doctor,
+	Gimmick_Growth,
 };
+
 
 //UCLASS()
 //class PROJECT_T_API UTeliGlobalDefines : public UObject

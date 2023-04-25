@@ -11,6 +11,9 @@
 class UAbilitySystemComponent;
 class UTeliAbilitySystemComponent;
 
+class UCapsuleComponent;
+class UAttributeSet;
+
 UCLASS()
 class PROJECT_T_API ATeliCharacter : public ACharacter , public IAbilitySystemInterface
 {
@@ -33,6 +36,13 @@ public:
 
 	virtual void PossessedBy(AController* NowController) override;
 
+	
+	void OnPressedUsedItemKey();
+	void OnReleassedUsedItemKey();
+
+
+	const ECharacterType& GetCharacterType();
+	
 public:
 	//	~ IAbilitySystemInterface 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
@@ -49,15 +59,19 @@ public:
 
 	
 
-
 protected:
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teli | Attribute")
-	//	TSubclassOf<UAttribute>
+	UAttributeSet* DefaultAttributeSet;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Teli Charcter")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Teli | Charcter")
 	ECharacterType CharacterType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensing")
+	UCapsuleComponent* CollisionChecker;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensing")
+	float SensingDistance = 100.0f;
 private:
 
 	UPROPERTY(Transient)
