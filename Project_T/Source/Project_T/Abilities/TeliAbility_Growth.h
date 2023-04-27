@@ -18,7 +18,9 @@ public:
 
 	UTeliAbility_Growth();
 	
-
 public:
+
+	void UpdateGrowthMaterialCount();
+	
 	
 };

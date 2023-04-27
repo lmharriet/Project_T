@@ -12,6 +12,8 @@
 /**
  * 
  */
+DECLARE_DELEGATE_OneParam(FValueChange, float);
+
 UCLASS()
 class PROJECT_T_API UTeliAttribute_Growth : public UTeliAttributeSetBase
 {
@@ -21,6 +23,14 @@ class PROJECT_T_API UTeliAttribute_Growth : public UTeliAttributeSetBase
 public:
 	UTeliAttribute_Growth();
 	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+public:
+
+	// ~ AttributeSet Interface
+	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+	// ~ end
+
+	void SetEvent(const FValueChange& InEvent)const { ValueChangeEvent = InEvent; }
 
 #pragma region AttributeSet Macros
 
@@ -28,8 +38,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UTeliAttribute_Growth, MaxGrowthMaterial);
 
 #pragma endregion
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	
 
 	UFUNCTION()
 	void OnRep_GrowthMaterial(const FGameplayAttributeData& OldValue);
@@ -47,4 +56,6 @@ private:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxGrowthMaterial, Category = "Teli|Material", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxGrowthMaterial;
 		
+
+	mutable FValueChange ValueChangeEvent;
 };

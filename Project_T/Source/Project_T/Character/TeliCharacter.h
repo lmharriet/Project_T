@@ -11,8 +11,9 @@
 class UAbilitySystemComponent;
 class UTeliAbilitySystemComponent;
 
-class UCapsuleComponent;
 class UAttributeSet;
+class UGameplayAbility;
+
 
 UCLASS()
 class PROJECT_T_API ATeliCharacter : public ACharacter , public IAbilitySystemInterface
@@ -23,9 +24,11 @@ public:
 	// Sets default values for this character's properties
 	ATeliCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
 
 public:	
 	// Called every frame
@@ -56,27 +59,37 @@ public:
 	//	사용할 기본 어트리뷰트셋 세팅
 	//virtual void SetDefaultAttributeSet();
 	
-
 	
+
+	// Test Func
+	void FeedValueChange(float Value);
 
 protected:
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teli | Attribute")
-	UAttributeSet* DefaultAttributeSet;
+	
+	//UAttributeSet* DefaultAttributeSet;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teli | Attribute")
+	TSubclassOf<UAttributeSet> DefaultAttributeSet;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teli | Attribute")
+	TArray<TSubclassOf<UGameplayAbility>> Abilities;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Teli | Charcter")
 	ECharacterType CharacterType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensing")
-	UCapsuleComponent* CollisionChecker;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensing")
-	float SensingDistance = 100.0f;
 private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTeliAbilitySystemComponent> AbilitySystemComponent;
-	
+
+
+#pragma region Input Action
+
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	//	class UInputAction* UseItemAction;
+#pragma endregion
+
+
+	bool OnUsingItem;
 
 
 

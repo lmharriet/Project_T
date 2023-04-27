@@ -14,7 +14,6 @@ UTeliAttribute_Growth::UTeliAttribute_Growth()
 
 }
 
-
 void UTeliAttribute_Growth::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -22,12 +21,30 @@ void UTeliAttribute_Growth::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME_CONDITION_NOTIFY(UTeliAttribute_Growth, GrowthMaterial, COND_None, REPNOTIFY_Always);
 
 	// TODO : Check if it will be changed quite often
-	DOREPLIFETIME_CONDITION_NOTIFY(UTeliAttribute_Growth, GrowthMaterial, COND_InitialOnly, REPNOTIFY_OnChanged);
+	DOREPLIFETIME_CONDITION_NOTIFY(UTeliAttribute_Growth, MaxGrowthMaterial, COND_InitialOnly, REPNOTIFY_OnChanged);
+}
+
+void UTeliAttribute_Growth::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	if (NewValue < MaxGrowthMaterial.GetCurrentValue())
+	{
+		ValueChangeEvent.ExecuteIfBound(NewValue);
+	}
+	else
+	{
+		float MaxValue = MaxGrowthMaterial.GetCurrentValue();
+		SetGrowthMaterial(MaxValue);
+
+		ValueChangeEvent.ExecuteIfBound(MaxValue);
+	}
+
 }
 
 void UTeliAttribute_Growth::OnRep_GrowthMaterial(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UTeliAttribute_Growth, GrowthMaterial, OldValue);
+	
+	ValueChangeEvent.ExecuteIfBound(GrowthMaterial.GetCurrentValue());
 }
 
 void UTeliAttribute_Growth::OnRep_MaxGrowthMaterial(const FGameplayAttributeData& OldValue)
