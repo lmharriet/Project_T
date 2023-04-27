@@ -31,7 +31,7 @@ public:
 
 protected:
 
-	// 
+	// Server, Client ½ÇÇà 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 private:
@@ -40,6 +40,10 @@ private:
 
 	// gameplayEffect..?
 	void GiveItem(UAbilitySystemComponent* TargetASC);
+
+
+	UFUNCTION(Server, Reliable)
+		void Server_GiveItem(AActor* Target);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teli|GameplayEffect")

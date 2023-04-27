@@ -16,7 +16,22 @@ void UTeliAbility_Feed::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UseItem();
+
+	if (IsLocallyControlled() == true)
+	{
+		AActor* Target = FindTarget();
+
+		if (Target == nullptr)
+		{
+			K2_CancelAbility();
+			return;
+		}
+
+		Server_GiveItem(Target);
+	}
+
+
+	//UseItem();
 }
 
 
@@ -79,12 +94,43 @@ AActor* UTeliAbility_Feed::FindTarget()
 
 void UTeliAbility_Feed::GiveItem(UAbilitySystemComponent* TargetASC)
 {
-	
-
 	if (TargetASC == nullptr)
 	{
+		K2_CancelAbility();
 		return;
 	}
 
-	TargetASC->ApplyGameplayEffectToSelf(NewObject<UGameplayEffect>(this, FeedEffect), 1.0f, TargetASC->MakeEffectContext());
+	FActiveGameplayEffectHandle Handle = TargetASC->ApplyGameplayEffectToSelf(FeedEffect->GetDefaultObject<UGameplayEffect>(), 1.0f, TargetASC->MakeEffectContext());
+	if (Handle.WasSuccessfullyApplied() == true)
+	{
+		K2_EndAbility();
+	}
+	else
+	{
+		K2_CancelAbility();
+	}
+}
+
+void UTeliAbility_Feed::Server_GiveItem_Implementation(AActor* Target)
+{
+	if (Target == nullptr)
+	{
+		K2_CancelAbility();
+		return;
+	}
+
+	TWeakObjectPtr<ATeliCharacter> Poro = Cast<ATeliCharacter>(Target);
+	if (Poro == nullptr)
+	{
+		K2_CancelAbility();
+		return;
+	}
+
+	UAbilitySystemComponent* TargetASC = Poro->GetAbilitySystemComponent();
+
+	//  TODO :Inventory Item 감소
+	UE_LOG(LogTemp, Warning, TEXT("UseItem Active"));
+
+	//	포로 effect
+	GiveItem(TargetASC);
 }

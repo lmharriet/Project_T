@@ -24,26 +24,38 @@ void UTeliAttribute_Growth::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME_CONDITION_NOTIFY(UTeliAttribute_Growth, MaxGrowthMaterial, COND_InitialOnly, REPNOTIFY_OnChanged);
 }
 
+void UTeliAttribute_Growth::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
+{
+	// GE에서 Instance로 값을 변경하면 Base가 변경됨. 아래의 PreAttributeChange 를 하면 Current가 변경됨. 그래서 BaseChange 함수는 계속 쌓이는 문제가 발생.
+	if (NewValue > GetMaxGrowthMaterial())
+	{
+		NewValue = 1.0f;
+	}
+}
+
+void UTeliAttribute_Growth::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
+{
+	// 변경하기 전에 들어오는 함수.
+	// NewValue를 변경하면 값 바뀌고 PostAttributeChange의 NewValue에 수정된 값으로 넘어간다. 
+
+	if (NewValue > GetMaxGrowthMaterial())
+	{
+		NewValue = 1.0f;
+	}
+}
+
 void UTeliAttribute_Growth::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
 {
-	if (NewValue < MaxGrowthMaterial.GetCurrentValue())
-	{
-		ValueChangeEvent.ExecuteIfBound(NewValue);
-	}
-	else
-	{
-		float MaxValue = MaxGrowthMaterial.GetCurrentValue();
-		SetGrowthMaterial(MaxValue);
+	// 값이 변경되면 들어오는 함수.
 
-		ValueChangeEvent.ExecuteIfBound(MaxValue);
-	}
-
+	ValueChangeEvent.ExecuteIfBound(NewValue);
 }
 
 void UTeliAttribute_Growth::OnRep_GrowthMaterial(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UTeliAttribute_Growth, GrowthMaterial, OldValue);
 	
+	// relativescaled3d rep 되는 걸로 나와있음.
 	ValueChangeEvent.ExecuteIfBound(GrowthMaterial.GetCurrentValue());
 }
 

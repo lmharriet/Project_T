@@ -4,8 +4,9 @@
 #include "Character/TeliCharacter.h"
 #include "Character/TeliCharacterMovementComponent.h"
 //#include "Components/InputComponent.h"  // TODO : if use enhanced Input system.
-
-
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "Abilities/TeliAbilitySystemComponent.h"
 
@@ -40,20 +41,42 @@ void ATeliCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	DefaultScaled3D = GetActorScale3D();
+
+	if (GetController() != nullptr)
+	{
+		GetController()->SetIgnoreLookInput(false);
+	}
+
 	if (HasAuthority() == true)
 	{
 		if (AbilitySystemComponent)
 		{
+			AbilitySystemComponent->SetOwnerActor(this);
+			AbilitySystemComponent->SetAvatarActor(this);
+
 			if (DefaultAttributeSet != nullptr)
 			{
 				const UTeliAttribute_Growth* Attribute = Cast<UTeliAttribute_Growth>(AbilitySystemComponent->AddAttributeSetSubobject(NewObject<UAttributeSet>(this, DefaultAttributeSet)));
-				//Attribute->SetEvent(FValueChange::BindUObject(this, &ATeliCharacter::FeedValueChange));
 				
+				Attribute->SetEvent(FValueChange::CreateUObject(this, &ThisClass::FeedValueChange));
 			}
 
 			for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
 			{
 				AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 1, -1, this));
+			}
+		}
+	}
+
+	else
+	{
+		if (AbilitySystemComponent)
+		{
+			const UTeliAttribute_Growth* GrowthAttribute = AbilitySystemComponent->GetSet< UTeliAttribute_Growth>();
+			if (GrowthAttribute != nullptr)
+			{
+				GrowthAttribute->SetEvent(FValueChange::CreateUObject(this, &ThisClass::FeedValueChange));
 			}
 		}
 	}
@@ -74,6 +97,10 @@ void ATeliCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	if (IsValid(PlayerInputComponent))
 	{
+		PlayerInputComponent->BindAxis(FName("Foward / Back"), this, &ATeliCharacter::MoveFowrad);
+		PlayerInputComponent->BindAxis(FName("Left / Right"), this, &ATeliCharacter::MoveLeft);
+
+
 		PlayerInputComponent->BindAction(FName(TEXT("UserItem")), IE_Pressed, this, &ATeliCharacter::OnPressedUsedItemKey);
 		PlayerInputComponent->BindAction(FName(TEXT("UserItem")), IE_Released, this, &ATeliCharacter::OnReleassedUsedItemKey);
 	}
@@ -84,7 +111,7 @@ void ATeliCharacter::PossessedBy(AController* NowController)
 {
 	//check(NowController);
 
-
+	Super::PossessedBy(NowController);
 }
 
 UAbilitySystemComponent* ATeliCharacter::GetAbilitySystemComponent() const
@@ -145,7 +172,7 @@ void ATeliCharacter::OnPressedUsedItemKey()
 
 	if (AbilitySystemComponent != nullptr && AbilitySystemComponent->IsValidLowLevel() == true)
 	{
-		FGameplayTag UseItemTag = FGameplayTag::RequestGameplayTag(FName("Action.Growth"));
+		FGameplayTag UseItemTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.Ability.Action.Feed"));
 
 		AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(UseItemTag), true);
 	}
@@ -155,6 +182,46 @@ void ATeliCharacter::OnPressedUsedItemKey()
 void ATeliCharacter::OnReleassedUsedItemKey()
 {
 	OnUsingItem = false;
+}
+
+void ATeliCharacter::MoveFowrad(float Value)
+{
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, Value);
+		//AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void ATeliCharacter::MoveLeft(float Value)
+{
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		//AddMovementInput(ForwardDirection, Value);
+		AddMovementInput(RightDirection, Value);
+	}
 }
 
 const ECharacterType& ATeliCharacter::GetCharacterType()
@@ -167,6 +234,11 @@ const ECharacterType& ATeliCharacter::GetCharacterType()
 // Test Func
 void ATeliCharacter::FeedValueChange(float Value)
 {
+	FVector&&CurScale = DefaultScaled3D + (FVector(0.1f * Value, 0.1f * Value, 0.1f * Value));
 	
-	// Value + 
+	SetActorScale3D(CurScale);
+	// AddMovementInput(GetActorForwardVector(), 1.0f);
+
+
+	UE_LOG(LogTemp, Warning, TEXT("UpdatedValue : %.f"), Value);
 }

@@ -39,9 +39,12 @@ public:
 
 	virtual void PossessedBy(AController* NowController) override;
 
-	
+
 	void OnPressedUsedItemKey();
 	void OnReleassedUsedItemKey();
+
+	void MoveFowrad(float Value);
+	void MoveLeft(float Value);
 
 
 	const ECharacterType& GetCharacterType();
@@ -82,6 +85,8 @@ private:
 	TObjectPtr<UTeliAbilitySystemComponent> AbilitySystemComponent;
 
 
+
+
 #pragma region Input Action
 
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -91,6 +96,6 @@ private:
 
 	bool OnUsingItem;
 
-
+	FVector DefaultScaled3D;
 
 };
